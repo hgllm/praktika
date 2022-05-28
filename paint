@@ -18,6 +18,14 @@ fn n2s( $n )
   fn SetLand($x,$y)
     { fbox(GetX($x),GetY($y),15,15,#555555)}
     
+   fn SetFood($x,$y)
+    { fbox(GetX($x),GetY($y),15,15,#00ff00)}  
+     
+   fn SetYad($x,$y)
+    { fbox(GetX($x),GetY($y),15,15,#ff0000)}   
+    
+   fn SetEmpty($x,$y)
+    { fbox(GetX($x),GetY($y),15,15,#000000)}
 //-------------------------------------
    fn generateX()
     {
@@ -50,4 +58,52 @@ fn n2s( $n )
     while ($y<8)
        {  SetLand($x,$y)   SetLand($x+11,15-$y)  $y=$y+1  }   
        
+   }
+  
+//-------  РИСУЕМ ЕДУ   --------------------
+
+  fn FoodPlace ( $count )
+  {
+   $i=0
+   while ( $i< $count )
+     {
+      $x= generateX()      $y= generateY()
+      if (if_some_there($x,$y)==4)
+        { SetFood($x,$y)    $i=$i+1  }
+     }
+   }
+
+//-----  РИСУЕМ ЯД   -----------------------
+  fn YadPlace( $count )
+  {
+   $i=0
+   while ( $i< $count )
+     {
+      $x= generateX()      $y= generateY()
+      if (if_some_there($x,$y)==4)
+        { SetYad($x,$y)    $i=$i+1  }
+     }
+   }
+//-----  РИСУЕМ ЕДУ ИЛИ ЯД   -----------------------
+  fn FoodYadPlace( )
+  {
+       $n= mod(rand(),FOODYAD)
+       if ($n==0) {  YadPlace(1)  }
+          else    {  FoodPlace(1) }     
+   }  
+// --  есть ли что-то там   --------------------
+// in -  координата Х, координата У  -----------
+// out - 4 если пусто
+//       3 если еда
+//       2 если сородич
+//       1 если стена
+//       0 если яд
+
+   fn if_some_there( $x, $y )
+   {
+     $color=get_dot(GetX($x)+1,GetY($y)+1)
+         if ( $color==#ff0000 ) { ret(0) }  
+         if ( $color==#555555 ) { ret(1) }
+         if ( $color==#00ff00 ) { ret(3) }
+         if ( $color==#000000 ) { ret(4) }
    }

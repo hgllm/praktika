@@ -1,14 +1,19 @@
+include "constant" 
 include "paint" 
 
  //=============================================
    Setka()
+  FoodPlace(FOOD)
+  YadPlace(YAD)
+  BiosPlace()
   frame(500)
 l:
+again:     
     
-     frame(DELAY)
 //------------------------------------------------------------------
-
   Setka()
+  FoodPlace(FOOD)
+  YadPlace(YAD)
   go l
 
 
