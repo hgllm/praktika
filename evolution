@@ -1,6 +1,30 @@
 include "constant" 
 include "paint" 
+include "bio-class"
 
+ bios=new( MAX_BIOS_COUNT , BIO_SIZE ,INT16)
+   eld=new( END_BIOS_LIVE ,1,INT16)
+   infoText=new(10,1,INT32)
+agn:
+   clear()   
+   showAble=0
+   GNR=0
+   steps=0
+   bio_live=MAX_BIOS_COUNT
+   rand_seed( get_seconds())
+   clean(infoText)
+  
+//-----------------------------------
+   i=0
+  while i< MAX_BIOS_COUNT
+  {
+    bio_generateMind( i )
+    bios[i,ADR]=0
+    bios[i,HEALTH]=35
+    bios[i,GENER]=1
+    bios[i,TRANSF ]=rand() div 4681
+    i=i+1
+  }
  //=============================================
    Setka()
   FoodPlace(FOOD)
@@ -8,12 +32,14 @@ include "paint"
   BiosPlace()
   frame(500)
 l:
-again:     
-    
+      i=0
+again:
 //------------------------------------------------------------------
+
   Setka()
   FoodPlace(FOOD)
   YadPlace(YAD)
+  BiosPlace()
   go l
 
 
