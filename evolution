@@ -1,5 +1,6 @@
 include "constant" 
 include "paint" 
+include "info" 
 include "bio-class"
 
  bios=new( MAX_BIOS_COUNT , BIO_SIZE ,INT16)

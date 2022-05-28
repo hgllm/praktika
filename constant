@@ -20,6 +20,8 @@ X_COORD= MIND_SIZE+1 // Х-координата
 Y_COORD= MIND_SIZE+2 // У-координата
  HEALTH= MIND_SIZE+3 // здоровье
   GENER= MIND_SIZE+4 // пройденно поколений
+ C_BLUE= MIND_SIZE+5 // цвет
+C_GREEN= MIND_SIZE+6 // цвет
  TRANSF= MIND_SIZE+7 // направление
    
    
