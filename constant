@@ -3,18 +3,24 @@ END_BIOS_LIVE=8   // кол-во живых, что бы начинать нов
 BIO_SIZE=72
 MIND_SIZE=64
 COLOR=#ff00ff
+CHILD= (MAX_BIOS_COUNT / END_BIOS_LIVE)- MUTANT - 1
 HEALTH_PLUS=10    // здоровья прибавляется от еды
 HEALTH_MAX=100     // максимальное количество здоровья
 FOOD=60           // количество еды на старте
 YAD =60           // количество яда на старте
 FOODYAD=2
+grafTOP= 100000   // максимальная продолжительность жизни поколения
+                  // при которой моделирование завершается
 DELAY=0
 
 
 // 0..63 мозг
+    ADR= MIND_SIZE+0 // адрес команды
 X_COORD= MIND_SIZE+1 // Х-координата
 Y_COORD= MIND_SIZE+2 // У-координата
  HEALTH= MIND_SIZE+3 // здоровье
+  GENER= MIND_SIZE+4 // пройденно поколений
+ TRANSF= MIND_SIZE+7 // направление
    
    
 // out - 4 если пусто

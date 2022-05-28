@@ -1,3 +1,34 @@
+//--прибавка здоровья---------------------------
+// in - номер био, количество здоровья----------
+// out- количество здоровья---------------------
+   fn bio_health_add($bio,$h)
+   {
+      $hlh=bios[ $bio, HEALTH ]
+      $hlh=$hlh+$h
+      if ( $hlh>HEALTH_MAX ) { $hlh= HEALTH_MAX }
+      bios[ $bio, HEALTH ]=$hlh
+      ret( $hlh )     }
+
+//--убавление здоровья--------------------------
+// in - номер био, количество здоровья----------
+// out- количество здоровья---------------------
+   fn bio_health_sub( $bio,$h )
+   {
+      $hlh=bios[ $bio, HEALTH ]
+      $hlh=$hlh-$h
+      if $hlh<0  { $hlh=0 }
+      bios[ $bio , HEALTH ]=$hlh
+      ret( $hlh )    }
+
+// -- увеличение адреса команды   --------------
+//  in - номер bio, насколько прибавить адрес --
+    fn bio_inc_command_address( $bio, $a )
+    {
+      $adr=bios[$bio,ADR]+$a
+      if ($adr >= MIND_SIZE ) { $adr=$adr - MIND_SIZE }
+      bios[$bio,ADR]=$adr
+    }
+
 //--генерация мозга    -------------------------
 // in - номер био-------------------------------
    fn bio_generateMind( $bio )
@@ -43,3 +74,163 @@
         print(n2s(bios[$bio,HEALTH]),$X+8,$Y+7)
    } 
    
+//  -- движение био, если возможно   -----------
+// in  номер био, направление
+   fn bio_move( $bio, $n )
+   {
+     $x= bio_X_from_vektor( $bio, $n )
+     $y= bio_Y_from_vektor( $bio, $n )
+     $h= if_some_there( $x, $y )
+     
+     if ($h==4) 
+       { 
+         SetEmpty(bios[$bio, X_COORD], bios[$bio, Y_COORD] )
+         bios[ $bio, X_COORD ]=$x   
+         bios[ $bio, Y_COORD ]=$y
+       }
+       
+      if ($h==3)
+        {
+          SetEmpty(bios[$bio, X_COORD], bios[$bio, Y_COORD] )
+          bios[ $bio, X_COORD ]=$x   
+          bios[ $bio, Y_COORD ]=$y
+          bio_health_add($bio, HEALTH_PLUS )
+          FoodYadPlace( )
+        }
+
+      if ($h==0)
+        {
+          bio_health_sub( $bio, 310 )
+          SetYad( bios[$bio, X_COORD], bios[$bio, Y_COORD] )
+          bio_live= bio_live-1
+          ret
+        }  
+	  if ( bio_health_sub($bio, 1 ) > 0 ) 
+        {
+           bio_inc_command_address( $bio, $h+1 )
+		   bio_show( $bio ) 
+		}           
+      else 
+        { 
+		   SetEmpty( bios[$bio, X_COORD], bios[$bio, Y_COORD] )
+           bio_live= bio_live-1 
+		}
+      ret
+   }
+   
+//  -- схватить еду или преобразовать яд   ---------------------------
+// in  номер био, направление
+   fn bio_fire( $bio, $n )
+   {
+     $x= bio_X_from_vektor( $bio, $n )
+     $y= bio_Y_from_vektor( $bio, $n )
+     $h= if_some_there( $x, $y )
+     if ($h==3)
+       {  
+          SetEmpty($x,$y)
+          bio_health_add($bio, HEALTH_PLUS )
+          FoodYadPlace( )
+       }
+     if ($h==0)
+       {  
+          SetFood($x,$y)
+       }
+	 if ( bio_health_sub($bio, 1) > 0 )
+       { 
+	      bio_show( $bio ) 
+          bio_inc_command_address( $bio, $h+1 ) 
+	   }
+      else 
+       { 
+	      SetEmpty( bios[$bio, X_COORD], bios[$bio, Y_COORD] )
+          bio_live= bio_live-1 
+	   } 
+      ret
+    }
+
+//----------------------------=---------------------------------
+//--------------------------------------------------------------
+    fn bio_step($bio)
+    {
+       if ( bios[$bio, HEALTH]==0 ) { ret }
+
+       $cikl=0
+cc:
+       $cikl=$cikl+1
+
+       if ( $cikl<10 ) 
+         {
+            $command = bios[$bio,bios[$bio,ADR]]
+            if ($command<8)  // 0..7 сделать шаг
+               {
+                  bio_move( $bio, $command )
+                  ret
+               }
+            if ($command<16) // 8..15 схватить преобразовать
+               {         
+                  bio_fire( $bio, $command ) 
+                  ret            
+               }
+             if ($command<24) // 16..23 посмотреть
+               {
+                 $xxx= bio_X_from_vektor( $bio, $command )
+                 $yyy= bio_Y_from_vektor( $bio, $command )
+                 $aa=  if_some_there( $xxx, $yyy )
+                 bio_inc_command_address( $bio, $aa+1 )
+                 go cc
+               }
+             if ($command<32) // 24..31 повернуть
+               {
+                 $command= mod($command,8)
+                 bios[$bio, TRANSF] =  bios[$bio, TRANSF] + $command
+                 if (  bios[$bio, TRANSF] > 7 )
+                     {  bios[$bio, TRANSF] =  bios[$bio, TRANSF]-8 }
+                 bio_inc_command_address( $bio, 1 )
+                 go cc
+               }
+             bio_inc_command_address( $bio, $command ) // 32..63 безусловный переход
+             go cc             
+         }
+	if ( bio_health_sub($bio, 1) > 0 )
+       { 
+	      bio_show( $bio ) 
+	   }
+      else 
+       { 
+	      SetEmpty( bios[$bio, X_COORD], bios[$bio, Y_COORD] )
+          bio_live= bio_live-1  
+	   } 
+         ret
+    }
+    
+
+ //------------   рождение нового поколения    --------------
+ // ----   in  -  номер родителя из массива eld
+ fn bio_child( $eld )
+  {
+  //-----------    обновление выжившего   ------------
+    $e=eld[$eld,0]
+    bios[$e,ADR]=0
+    bios[$e,HEALTH]=35
+    bios[$e,GENER]=  bios[$e,GENER]+1
+    biosCOLOR= COLOR-30
+    bios[$e,TRANSF ]=rand() div 4681
+ 
+//-----------     создание копий     ----------------
+    $a=0
+    while ( $a< CHILD )   
+      {
+        $d=findDead() 
+        $i=0
+        while ( $i< MIND_SIZE )
+          { bios[$d,$i]=bios[$e,$i] $i=$i+1 }
+    
+        bios[$d,ADR]=0
+        bios[$d,HEALTH]=35
+        bios[$d,GENER]=  bios[$e,GENER]
+        bios[$e,TRANSF ]= rand() div 4681
+        $a=$a+1
+      }       
+      ret
+  }
+  
